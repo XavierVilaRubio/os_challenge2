@@ -10,12 +10,3 @@ run_%: %
 	./$< $(TESTARGS) 
 clean:
 	@rm -rf *.o $(TARGET)
-
-
-
-
-
-
-	
-
-

@@ -6,6 +6,7 @@
 #include <signal.h>
 #include <errno.h>
 #include "pokemon.h"
+#include <string.h>
 
 struct pokemon pokedex[151];
 
@@ -49,14 +50,15 @@ int main(int argc, char** argv) {
   }
   
   fclose(f);
+  kill(getppid(), SIGCONT);
   
-  // This part must be changed properly
+  //while(1){
   int pokemonId;
-  printf ("Enter a pokemonId between (1-151): ");
-  scanf ("%d",&pokemonId);
-  struct pokemon p;
-  p = pokedex[pokemonId - 1]; 
-  printf ("The pokemon with id:%d it is known as: %s.\n",pokemonId,p.name);
+    scanf("%d", &pokemonId);
+    struct pokemon p;
+    p = pokedex[pokemonId - 1];
+    printf("The pokemon with id:%d it is known as: %s.\n", pokemonId, p.name);
+  //}
 
   exit(0);
 }

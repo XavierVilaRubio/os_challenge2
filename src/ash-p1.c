@@ -24,9 +24,36 @@ char *args2[] = {"pokedex", "pokedex", NULL};
 enum State {WaitingPokedex=1, WaitingPokemon=2, Fighting=3, EndFight=4}; 
 enum State currentStatus;
 
+char msg[100];
+void cont(){}
 
 int main(int arc, char *arv[])
 {
-    exit(0);
+    signal(SIGCONT, cont);
+    int status;
+    int fd[2], fd2[2];
+    int pokemonId;
 
+    pipe(fd);
+    if(fork()==0){
+        close(0);
+        dup(fd[0]);
+        close(fd[0]);
+        close(fd[1]);
+        execv(args2[0], args2);
+        exit(0);
+    }
+    pause();
+    close(1);
+    dup(fd[1]);
+    close(fd[0]);
+    close(fd[1]);
+    //while(1){
+    scanf("%d", &pokemonId);
+    write(fd[1], pokemonId, sizeof(pokemonId));
+    close(1);
+    //}
+
+    wait(&status);
+    exit(0);
 }
