@@ -50,15 +50,31 @@ int main(int argc, char** argv) {
   }
   
   fclose(f);
+
+  // @Jordi: Jo no faria anar SIGCONT en aquest cas millor, SIGUSR1 o SIGUSR2
+  // Ja que, si no ho demano SIGCONT ja té les seves funcions per defecte.
   kill(getppid(), SIGCONT);
-  
+
   //while(1){
   int pokemonId;
-    scanf("%d", &pokemonId);
+
+    // @Bug: El problema es que pokemonid tenia un nombre més gran que 151 i al buscar al array segmenation fault.
+    // scanf("%d", &pokemonId);
+
+    //@Jordi: Una solució utiltizar el read, ja que l'scanf té un comportament diferent.
+    //        Mira el pare, on t'he deixat les línies comentades per que et funcioni amb el scanf també.
+    read(0,&pokemonId,sizeof(int));
+
+    //@Jordi: Amb aquest xivato pot comprovar el que li envies si actives el scanf, per veure el problema que et comento.
+    printf("he rebut... %d\n",pokemonId);fflush(stdout);
+
     struct pokemon p;
     p = pokedex[pokemonId - 1];
+
+    // @Jordi: Si fas anar printf, assegura't de fer stdout al final, si no pot ser que no observis el resultat.
     printf("The pokemon with id:%d it is known as: %s.\n", pokemonId, p.name);
-  //}
+    fflush(stdout);
+ //}
 
   exit(0);
 }
