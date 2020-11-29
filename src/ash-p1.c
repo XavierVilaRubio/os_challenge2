@@ -43,17 +43,42 @@ int main(int arc, char *arv[])
         execv(args2[0], args2);
         exit(0);
     }
+
     pause();
-    close(1);
-    dup(fd[1]);
+
+    //@Jordi: El pare no cal que tanqui la sortida 1, pot fer servir directament el pipe fd[1]
+    //close(1);
+    //dup(fd[1]);
+
     close(fd[0]);
-    close(fd[1]);
+    //@Jordi: La neteja de la pipe s'ha de fer quan ja no tinguis que fer-la servir.
+    //close(fd[1]);
+
     //while(1){
+
+    printf("Enter a pokemonId:  ");
     scanf("%d", &pokemonId);
-    write(fd[1], pokemonId, sizeof(pokemonId));
-    close(1);
+
+    //@Jordi: El pare en aquest punt pot fer anar directament la pipe
+    //@Jordi: Recorda que el write necessita l'@ -> &pokemonId en lloc de pokemonId declarat com int pokemonId.
+
+    //@Jordi: Si li passes així millor i més simple fer un read a pokedex.c.
+    //@Jordi: Millor sempre fer anar write i read amb pipes.
+    write(fd[1], &pokemonId, sizeof(int));
+
+    //@Jordi: Si vols fer anar scanf a pokedex.c has de passar-li així si no et donarà problemes.
+    //char pokemonIdstr[30];
+    //sprintf(pokemonIdstr,"%d",pokemonId);
+    //write(fd[1],&pokemonIdstr,sizeof(pokemonIdstr));
+
+    // @Jordi: El pare no cal tancar la stdout (1).
+    //close(1);
     //}
 
     wait(&status);
+
+    //@Jordi: Aqui el pare ja no escriura més a la pipe ja que el fill ha acabat, per tant es pot tancar.
+    close(fd[1]);
+
     exit(0);
 }
