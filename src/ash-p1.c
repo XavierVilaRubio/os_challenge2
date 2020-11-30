@@ -34,12 +34,16 @@ pid_t child_pid;
 int status;
 int fd[2], fd2[2];
 
-void cont() {}
+void handlerSIG1(){
+    currentStatus=WaitingPokemon;
+}
 
-void end(){
+void handlerSIGINT(){
     close(fd[1]);
     close(fd2[0]);
+    printf("\nTurning off Pokedex...\n");fflush(stdout);
     kill(child_pid, SIGUSR1);
+    printf("Pokedex turned off\n");fflush(stdout);
     wait(&status);
     exit(0);
 }
@@ -47,8 +51,8 @@ void end(){
 int main(int arc, char *arv[])
 {
     //Preparem el tractament de senyals
-    signal(SIGUSR1, cont);
-    signal(SIGINT, end);
+    signal(SIGUSR1, handlerSIG1);
+    signal(SIGINT, handlerSIGINT);
 
     //Creem les pipes
     pipe(fd);
@@ -70,7 +74,10 @@ int main(int arc, char *arv[])
         exit(0);
     }
     //Esperem a que la pokedex carregui
-    pause();
+    currentStatus = WaitingPokedex;
+    while(currentStatus==WaitingPokedex){}
+    printf("[%d] Pokedex is ready to search info...\n", getpid());
+    fflush(stdout);
 
     //Tanquem descriptors innecessaris
     close(fd[0]);
