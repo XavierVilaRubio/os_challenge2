@@ -68,8 +68,8 @@ int main(int argc, char **argv)
 	//Avisem a l'Ash de que ja la pokedex ja ha carregat
 	kill(getppid(), SIGUSR1);
 
-	while (1)
-	{
+	//while (1)
+	//{
 		int pokemonId;
 
 		//Llegim el pokemonId que ens passen per la pipe(fd)
@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 
 		//Retornem l'apuntador del pokemon sol·licitat per la pipe(fd2)
 		write(1, &p, sizeof(struct pokemon));
-	}
+	//}
 
 	exit(0);
 }

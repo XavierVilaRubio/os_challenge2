@@ -26,9 +26,9 @@ int main(int arc, char *arv[])
 
     while (endFlag == 1) { 
 
-
         char s[100];
         char choice;
+        int pokemon_pid;
         
         sprintf(s, "################\n# E. Explore \n# Q. Quit\n################\n");
 		if (write(1, s, strlen(s)) < 0) perror("Error writting the menu");
@@ -39,6 +39,12 @@ int main(int arc, char *arv[])
                 endFlag=0;
                 break; 
             case 'E':
+                pokemon_pid=fork();
+                if(pokemon_pid==0){
+                    exit(0);
+                }
+                sprintf(s, "Ash:[%d] --> %sWild pokemon appeared [%d]%s\n", getpid(), KBLU, pokemon_pid, KNRM);
+                write(1, s, strlen(s));
                 break; 
             default: 
                 sprintf(s, "%s!!!!Invalid option. Try again. %s\n", KRED, KNRM);
