@@ -7,7 +7,6 @@
 #include <errno.h>
 #include "packet.h"
 #include "pokemon.h"
-#include <time.h>
 
 #define KNRM "\x1B[0m"
 #define KRED "\x1B[31m"
@@ -15,6 +14,7 @@
 #define KYEL "\x1B[33m"
 #define KBLU "\x1B[34m"
 #define KMAG "\x1B[35m"
+#define KPNK "\e[1;35m"
 #define KCYN "\x1B[36m"
 #define KWHT "\x1B[37m"
 
@@ -32,33 +32,48 @@ enum State
 };
 enum State currentStatus;
 
+#define MAX_BERRIES 4
+
 pid_t pokemon_pid;
 int status;
 int fd[2], fd2[2], fd3[2];
 int endFlag=1;
 char s[100];
 int num;
+int berry_array[MAX_BERRIES]={2};
+int berry_size=1;
+void berry(){
+	if(berry_size<MAX_BERRIES) {
+		berry_array[berry_size]=(2+(2*berry_size));
+		berry_size++;
+		sprintf(s, "%s🍓 Catch rate augmented%s\n", KPNK, KNRM);
+	}else {
+		sprintf(s, "%sThe pokemon is stuffed%s\n", KPNK, KNRM);
+	}
+	write(1, s, strlen(s));
+}
 
 void handlerSIGUSR1(){
 	currentStatus++;
 }
 
 //Processa les accions dels pokemon
-void fightPokemon(int num){
-	switch(num){
-		case 2:
+void fightPokemon(int num) {
+	for(int i = 0; i < 4; i++) {
+		if(num==berry_array[i]) {
 			printf("%sGotcha!The pokemon was caught.%s\n", KGRN, KNRM);fflush(stdout);
 			kill(pokemon_pid, SIGKILL);
 			currentStatus=EndFight;
-			break;
-		case 7:
+			return;
+		}
+	}
+	if(num==7) {
 			printf("%sThe pokemon escaped already.%s\n", KYEL, KNRM);fflush(stdout);
 			kill(pokemon_pid, SIGKILL);
 			currentStatus=EndFight;
-			break;
-		default:
-			printf("%sOh no!The pokemon broke free.%s\n", KBLU, KNRM);fflush(stdout);
-			break;
+	}else {
+		printf("%sOh no!The pokemon broke free.%s\n", KBLU, KNRM);
+		fflush(stdout);
 	}
 }
 
@@ -95,7 +110,6 @@ int main(int arc, char *arv[])
 	//Preparem el tractament de senyals
 	signal(SIGUSR1, handlerSIGUSR1);
 	signal(SIGINT, handlerSIGINT);
-	srand(time(NULL));
 
 	while (endFlag == 1) { 
 
@@ -175,9 +189,12 @@ int main(int arc, char *arv[])
 				if (write(1, s, strlen(s)) < 0) perror("Error writting invalid option");
 				break;
 		}
+		memset(berry_array, 0, sizeof(berry_array));
+		berry_array[0]=2;
+		berry_size=1;
 		while (currentStatus == Fighting)
 		{
-			sprintf(s, "# P. Throw Pokeball \n# R. Run\n");
+			sprintf(s, "# P. Throw Pokeball \n# B. Throw a berry (%d/%d) \n# R. Run\n", (MAX_BERRIES-berry_size), MAX_BERRIES-1);
 			if (write(1, s, strlen(s)) < 0) perror("Error writting the menu");
 			scanf(" %c", &choice);
 			switch (choice)
@@ -186,6 +203,9 @@ int main(int arc, char *arv[])
 				//Llegim el numero aleatori generat pel pokemon
 				read(fd3[0], &num, sizeof(int));
 				fightPokemon(num);
+				break;
+			case 'B':
+				berry();
 				break;
 			case 'R':
 				kill(pokemon_pid, SIGKILL);
