@@ -70,16 +70,16 @@ int main(int argc, char **argv)
 
 	//while (1)
 	//{
-		int pokemonId;
+	int pokemonId;
 
-		//Llegim el pokemonId que ens passen per la pipe(fd)
-		read(0, &pokemonId, sizeof(int));
+	//Llegim el pokemonId que ens passen per la pipe(fd)
+	read(0, &pokemonId, sizeof(int));
 
-		struct pokemon p;
-		p = pokedex[pokemonId - 1];
+	struct pokemon p;
+	p = pokedex[pokemonId - 1];
 
-		//Retornem l'apuntador del pokemon sol·licitat per la pipe(fd2)
-		write(1, &p, sizeof(struct pokemon));
+	//Retornem l'apuntador del pokemon sol·licitat per la pipe(fd2)
+	write(1, &p, sizeof(struct pokemon));
 	//}
 
 	exit(0);
