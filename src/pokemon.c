@@ -8,11 +8,14 @@
 #include "pokemon.h"
 #include <time.h>
 
+void generar(){
+	int num = (rand() % 9) + 1;
+	write(1, &num, sizeof(int));
+}
+
 int main () {
+	signal(SIGUSR2, generar);
 	srand(time(NULL));
-	while(1){
-		int num = (rand() % 9) + 1;
-		write(1, &num, sizeof(int));
-	}
+	while(1){}
 	exit(0);
 }

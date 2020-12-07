@@ -7,6 +7,7 @@
 #include <errno.h>
 #include "packet.h"
 #include "pokemon.h"
+#include <time.h>
 
 #define KNRM "\x1B[0m"
 #define KRED "\x1B[31m"
@@ -34,7 +35,7 @@ enum State currentStatus;
 
 #define MAX_BERRIES 4
 
-pid_t pokemon_pid;
+pid_t pokemon_pid, pokedex_pid;
 int status;
 int fd[2], fd2[2], fd3[2];
 int endFlag = 1;
@@ -95,8 +96,10 @@ void handlerSIGINT()
 {
 	close(fd[1]);
 	close(fd2[0]);
-	close(fd3[1]);
+	close(fd3[0]);
 	kill(pokemon_pid, SIGKILL);
+	kill(pokedex_pid, SIGKILL);
+	wait(&status);
 	wait(&status);
 	exit(0);
 }
@@ -126,11 +129,39 @@ int main(int arc, char *arv[])
 	//Preparem el tractament de senyals
 	signal(SIGUSR1, handlerSIGUSR1);
 	signal(SIGINT, handlerSIGINT);
+	srand(time(NULL));
+
+	//Creem les pipes i el fill per interactuar amb la pokedex
+	pipe(fd);
+	pipe(fd2);
+	pokedex_pid = fork();
+	if (pokedex_pid == 0)
+	{
+		close(0);
+		dup(fd[0]);
+		close(1);
+		dup(fd2[1]);
+		close(fd[0]);
+		close(fd[1]);
+		close(fd2[0]);
+		close(fd2[1]);
+		//Executem la pokedex
+		execv(args2[0], args2);
+		//exit(0);
+	}
+	//Esperem a que la pokedex carregui
+	currentStatus = WaitingPokedex;
+	while (currentStatus == WaitingPokedex){}
+
+	//Tanquem descriptors innecessaris
+	close(fd[0]);
+	close(fd2[1]);
 
 	while (endFlag == 1)
 	{
 
 		char choice;
+		int pokemonId;
 
 		sprintf(s, "################\n# E. Explore \n# Q. Quit\n################\n");
 		if (write(1, s, strlen(s)) < 0)
@@ -142,36 +173,11 @@ int main(int arc, char *arv[])
 			endFlag = 0;
 			break;
 		case 'E':
-			//Creem les pipes i el fill per interactuar amb la pokedex
-			pipe(fd);
-			pipe(fd2);
-			if (fork() == 0)
-			{
-				close(0);
-				dup(fd[0]);
-				close(1);
-				dup(fd2[1]);
-				close(fd[0]);
-				close(fd[1]);
-				close(fd2[0]);
-				close(fd2[1]);
-				//Executem la pokedex
-				execv(args2[0], args2);
-				exit(0);
-			}
-			//Esperem a que la pokedex carregui
-			currentStatus = WaitingPokedex;
-			while (currentStatus == WaitingPokedex)
-			{
-			}
-
-			//Tanquem descriptors innecessaris
-			close(fd[0]);
-			close(fd2[1]);
-
+		
 			//Generem el pokemon aleatori
-			int pokemonId = (rand() % 151) + 1;
+			pokemonId = (rand() % 151) + 1;
 
+			kill(pokedex_pid, SIGUSR2);
 			//Li passem el pokemonId generat aleatoriament a la pokedex per la pipe(fd)
 			write(fd[1], &pokemonId, sizeof(int));
 
@@ -201,10 +207,8 @@ int main(int arc, char *arv[])
 			sprintf(s, "Ash:[%d] --> %sWild pokemon appeared [%d]%s\n", getpid(), KBLU, pokemon_pid, KNRM);
 			write(1, s, strlen(s));
 			//currentStatus: WaitingPokemon --> Fighting
-			currentStatus++;
+			currentStatus=Fighting;
 			printPokemon(pkm);
-			close(fd[1]);
-			close(fd2[0]);
 			break;
 		default:
 			sprintf(s, "%s!!!!Invalid option. Try again. %s\n", KRED, KNRM);
@@ -224,7 +228,9 @@ int main(int arc, char *arv[])
 			switch (choice)
 			{
 			case 'P':
-				//Llegim el numero aleatori generat pel pokemon
+				//Demanem un número aleatori al pokemon
+				kill(pokemon_pid, SIGUSR2);
+				//Llegim el número aleatori generat pel pokemon
 				read(fd3[0], &num, sizeof(int));
 				fightPokemon(num);
 				break;
@@ -244,11 +250,14 @@ int main(int arc, char *arv[])
 				break;
 			}
 		}
-		close(fd[1]);
-		close(fd2[0]);
-		close(fd3[1]);
+		close(fd3[0]);
 	}
 
+	close(fd[1]);
+	close(fd2[0]);
+	close(fd3[0]);
+	kill(pokemon_pid, SIGKILL);
+	kill(pokedex_pid, SIGKILL);
 	sprintf(s, "%s!!!!I'm tired from all the fun... %s\n", KMAG, KNRM);
 	if (write(1, s, strlen(s)) < 0)
 		perror("Error writting the ending msg");
