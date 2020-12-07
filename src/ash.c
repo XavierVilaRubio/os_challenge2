@@ -49,7 +49,7 @@ void berry()
 	{
 		berry_array[berry_size] = (2 + (2 * berry_size));
 		berry_size++;
-		sprintf(s, "%s🍓 Catch rate augmented%s\n", KPNK, KNRM);
+		sprintf(s, "%sCatch rate augmented%s\n", KPNK, KNRM);
 	}
 	else
 	{
