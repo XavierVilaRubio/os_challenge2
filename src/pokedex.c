@@ -1,7 +1,7 @@
 #include <stdio.h>	  /* fopen, fprintf, fread, fscanf, fseek, ftell, fclose */
-#include <string.h>	  /* strcmp, strncpy */
 #include <stdlib.h>	  /* malloc, free, exit, atoi */
 #include <unistd.h>	  /* sleep, unlink, getpid */
+#include <string.h>	  /* strcmp, strncpy */
 #include <sys/wait.h> /* wait */
 #include <signal.h>
 #include <errno.h>
