@@ -73,6 +73,7 @@ void fightPokemon(int num)
 			sprintf(s, "%sGotcha!The pokemon was caught.%s\n", KGRN, KNRM);
 			write(1, s, strlen(s));
 			kill(pokemon_pid, SIGKILL);
+			wait(&status);
 			currentStatus = EndFight;
 			return;
 		}
@@ -82,6 +83,7 @@ void fightPokemon(int num)
 		sprintf(s, "%sThe pokemon escaped already.%s\n", KYEL, KNRM);
 		write(1, s, strlen(s));
 		kill(pokemon_pid, SIGKILL);
+		wait(&status);
 		currentStatus = EndFight;
 	}
 	else
@@ -230,6 +232,7 @@ int main(int arc, char *arv[])
 			case 'P':
 				//Demanem un número aleatori al pokemon
 				kill(pokemon_pid, SIGUSR2);
+				wait(&status);
 				//Llegim el número aleatori generat pel pokemon
 				read(fd3[0], &num, sizeof(int));
 				fightPokemon(num);
@@ -239,6 +242,7 @@ int main(int arc, char *arv[])
 				break;
 			case 'R':
 				kill(pokemon_pid, SIGKILL);
+				wait(&status);
 				sprintf(s, "Ash [%d] %sused escape rope%s\n", getpid(), KBLU, KNRM);
 				write(1, s, strlen(s));
 				currentStatus++;
@@ -258,6 +262,8 @@ int main(int arc, char *arv[])
 	close(fd3[0]);
 	kill(pokemon_pid, SIGKILL);
 	kill(pokedex_pid, SIGKILL);
+	wait(&status);
+	wait(&status);
 	sprintf(s, "%s!!!!I'm tired from all the fun... %s\n", KMAG, KNRM);
 	if (write(1, s, strlen(s)) < 0)
 		perror("Error writting the ending msg");
