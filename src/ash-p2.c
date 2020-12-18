@@ -153,7 +153,9 @@ int main(int arc, char *arv[])
 	}
 	//Esperem a que la pokedex carregui
 	currentStatus = WaitingPokedex;
-	while (currentStatus == WaitingPokedex){}
+	while (currentStatus == WaitingPokedex)
+	{
+	}
 
 	//Tanquem descriptors innecessaris
 	close(fd[0]);
@@ -175,7 +177,7 @@ int main(int arc, char *arv[])
 			endFlag = 0;
 			break;
 		case 'E':
-		
+
 			//Generem el pokemon aleatori
 			pokemonId = (rand() % 151) + 1;
 
@@ -209,7 +211,7 @@ int main(int arc, char *arv[])
 			sprintf(s, "Ash:[%d] --> %sWild pokemon appeared [%d]%s\n", getpid(), KBLU, pokemon_pid, KNRM);
 			write(1, s, strlen(s));
 			//currentStatus: WaitingPokemon --> Fighting
-			currentStatus=Fighting;
+			currentStatus = Fighting;
 			printPokemon(pkm);
 			break;
 		default:

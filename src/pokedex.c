@@ -10,19 +10,6 @@
 
 struct pokemon pokedex[151];
 
-void search(){
-		int pokemonId;
-
-		//Llegim el pokemonId que ens passen per la pipe(fd)
-		read(0, &pokemonId, sizeof(int));
-
-		struct pokemon p;
-		p = pokedex[pokemonId - 1];
-
-		//Retornem l'apuntador del pokemon sol·licitat per la pipe(fd2)
-		write(1, &p, sizeof(struct pokemon));
-}
-
 int main(int argc, char **argv)
 {
 	FILE *f = fopen("pokedex.csv", "r");
@@ -80,12 +67,18 @@ int main(int argc, char **argv)
 
 	//Avisem a l'Ash de que ja la pokedex ja ha carregat
 	kill(getppid(), SIGUSR1);
-
-	signal(SIGUSR2, search);
 	while (1)
 	{
+		int pokemonId;
 
+		//Llegim el pokemonId que ens passen per la pipe(fd)
+		read(0, &pokemonId, sizeof(int));
+
+		struct pokemon p;
+		p = pokedex[pokemonId - 1];
+
+		//Retornem l'apuntador del pokemon sol·licitat per la pipe(fd2)
+		write(1, &p, sizeof(struct pokemon));
 	}
-
 	exit(0);
 }
