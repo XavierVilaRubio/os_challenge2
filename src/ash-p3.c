@@ -18,7 +18,8 @@
 #define KWHT "\x1B[37m"
 
 char *args2[] = {"pokedex", "pokedex", NULL};
-char *args3[] = {"pokemon-fight", "pokemon-fight", NULL};
+char *args3[] = {"pokemon-fight", "0", NULL};
+char *args4[] = {"pokemon-fight", "1", NULL};
 
 #define TRUE 1
 #define FALSE 0
@@ -32,12 +33,18 @@ enum State
 enum State currentStatus;
 
 pid_t pokedex_pid, pokemon1_pid, pokemon2_pid;
-int fd[2], fd2[2], fd3[2];
+int fd[2], fd2[2], fd3[2], fd4[2], pkmns = 0;
 char s[100];
 
 void handlerSIGUSR1()
 {
 	currentStatus++;
+}
+
+int genRand(int num)
+{
+	srand(getpid());
+	return (rand() % num);
 }
 
 int main(int arc, char *arv[])
@@ -59,9 +66,9 @@ int main(int arc, char *arv[])
 		close(fd2[1]);
 		//Executem la pokedex
 		execv(args2[0], args2);
-		//exit(0);
+		exit(0);
 	}
-	//1.ash is waiting pokedex to be ready
+	//ash is waiting pokedex to be ready
 	currentStatus = WaitingPokedex;
 	while (currentStatus == WaitingPokedex)
 	{
@@ -69,50 +76,75 @@ int main(int arc, char *arv[])
 	sprintf(s, "[%d] Pokedex is ready to search info...\n", getpid());
 	write(1, s, strlen(s));
 
-	//2.ash creates two child pokemon_fight.c
+	//ash creates two child pokemon_fight.c
+	pipe(fd3);
+	pipe(fd4);
 	pokemon1_pid = fork();
 	if (pokemon1_pid == 0)
 	{
 		close(0);
 		dup(fd2[0]);
-		close(1);
-		dup(fd[1]);
+		//close(1);
+		//dup(fd[1]);
 		close(fd[0]);
-		close(fd[1]);
+		//close(fd[1]);
 		close(fd2[0]);
 		close(fd2[1]);
 		execv(args3[0], args3);
-		//exit(0);
+		exit(0);
 	}
-	//3.ash waits the child to be ready
-	currentStatus = WaitingPokemon;
-	while (currentStatus == WaitingPokemon)
-	{
-	}
-	sprintf(s, "[%d] Pokedemon1 is ready to fight...\n", getpid());
-	write(1, s, strlen(s));
-
-	/*
 	pokemon2_pid = fork();
 	if (pokemon2_pid == 0)
 	{
 		close(0);
 		dup(fd2[0]);
-		close(1);
-		dup(fd[1]);
+		//close(1);
+		//dup(fd[1]);
 		close(fd[0]);
-		close(fd[1]);
+		//close(fd[1]);
 		close(fd2[0]);
 		close(fd2[1]);
-		execv(args3[0], args3);
+		execv(args4[0], args4);
+		exit(0);
 	}
-	*/
+	//ash waits the child to be ready
+	currentStatus = WaitingPokemon;
+	while (currentStatus == WaitingPokemon)
+	{
+	}
+	currentStatus = WaitingPokemon;
+	while (currentStatus == WaitingPokemon)
+	{
+	}
+	//info
+	//write(fd2[1], KCYN, sizeof(KCYN));
+	//write(fd2[1], KMAG, sizeof(KMAG));
+	//write(fd2[1], KMAG, sizeof(KMAG));
+	//write(fd2[1], KCYN, sizeof(KCYN));
+	sprintf(s, "[%d] Pokedemons are ready to fight...\n", getpid());
+	write(1, s, strlen(s));
+	kill(pokemon1_pid, SIGUSR2);
+	kill(pokemon2_pid, SIGUSR2);
 
-	//4.info
-	//5.end fight
-	//6.wait pokemons end
-	//7.kill and wait pokedex and end
+	sprintf(s, "[%d] Fight starts...\n", getpid());
+	write(1, s, strlen(s));
+
+	close(fd[0]);
+	close(fd[1]);
+	close(fd2[0]);
+	close(fd2[1]);
+	close(fd3[0]);
+	close(fd3[1]);
+	close(fd4[0]);
+	close(fd4[1]);
+	//wait pokemons end
 	wait(NULL);
+	wait(NULL);
+	sprintf(s, "[%d] The fight ends...\n", getpid());
+	write(1, s, strlen(s));
+
+	//kill and wait pokedex and end
+	kill(pokedex_pid, SIGKILL);
 	wait(NULL);
 
 	exit(0);
