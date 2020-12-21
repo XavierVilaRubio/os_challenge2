@@ -49,6 +49,7 @@ int genRand(int num)
 
 int main(int arc, char *arv[])
 {
+	int status;
 	signal(SIGUSR1, handlerSIGUSR1);
 
 	pipe(fd);
@@ -84,13 +85,15 @@ int main(int arc, char *arv[])
 	{
 		close(0);
 		dup(fd2[0]);
-		//close(1);
-		//dup(fd[1]);
 		close(fd[0]);
-		//close(fd[1]);
 		close(fd2[0]);
 		close(fd2[1]);
 		execv(args3[0], args3);
+		close(fd[1]);
+		close(fd3[0]);
+		close(fd3[1]);
+		close(fd4[0]);
+		close(fd4[1]);
 		exit(0);
 	}
 	pokemon2_pid = fork();
@@ -98,13 +101,15 @@ int main(int arc, char *arv[])
 	{
 		close(0);
 		dup(fd2[0]);
-		//close(1);
-		//dup(fd[1]);
 		close(fd[0]);
-		//close(fd[1]);
 		close(fd2[0]);
 		close(fd2[1]);
 		execv(args4[0], args4);
+		close(fd[1]);
+		close(fd3[0]);
+		close(fd3[1]);
+		close(fd4[0]);
+		close(fd4[1]);
 		exit(0);
 	}
 	//ash waits the child to be ready
@@ -117,10 +122,6 @@ int main(int arc, char *arv[])
 	{
 	}
 	//info
-	//write(fd2[1], KCYN, sizeof(KCYN));
-	//write(fd2[1], KMAG, sizeof(KMAG));
-	//write(fd2[1], KMAG, sizeof(KMAG));
-	//write(fd2[1], KCYN, sizeof(KCYN));
 	sprintf(s, "[%d] Pokedemons are ready to fight...\n", getpid());
 	write(1, s, strlen(s));
 	kill(pokemon1_pid, SIGUSR2);
@@ -138,14 +139,14 @@ int main(int arc, char *arv[])
 	close(fd4[0]);
 	close(fd4[1]);
 	//wait pokemons end
-	wait(NULL);
-	wait(NULL);
+	wait(&status);
+	wait(&status);
 	sprintf(s, "[%d] The fight ends...\n", getpid());
 	write(1, s, strlen(s));
 
 	//kill and wait pokedex and end
 	kill(pokedex_pid, SIGKILL);
-	wait(NULL);
+	wait(&status);
 
 	exit(0);
 }
