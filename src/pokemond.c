@@ -31,12 +31,16 @@ char *message;
 {
     FILE *logfile;
     time_t curtime;
+    //Guarda la data a curtime
     time(&curtime);
 
+    //Converteix la data (tm structure) a string
     char *t = ctime(&curtime);
+    //Elimina el salt de linea
     if (t[strlen(t) - 1] == '\n')
         t[strlen(t) - 1] = '\0';
 
+    //Obre el filename i li escriu la data + el message
     logfile = fopen(filename, "a");
     if (!logfile)
         return;

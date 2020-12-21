@@ -8,5 +8,8 @@ all: $(TARGET)
 	$(CC) $(CFLAGS) -o $@ $<
 run_%: %
 	./$< $(TESTARGS) 
+deamon:
+	$(CC) $(CFLAGS) -o pokemond pokemond.c
+	./pokemond
 clean:
 	@rm -rf *.o $(TARGET)

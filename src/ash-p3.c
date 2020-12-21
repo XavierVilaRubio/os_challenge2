@@ -47,8 +47,30 @@ int genRand(int num)
 	return (rand() % num);
 }
 
+int checkDeamon()
+{
+	char line[6];
+	FILE *cmd = popen("pidof -x pokemond", "r");
+
+	fgets(line, 6, cmd);
+	pid_t pid = strtoul(line, NULL, 10);
+
+	pclose(cmd);
+	if (pid == 0)
+	{
+		sprintf(s, "%s[ERROR] To play a pokemon game, the pokemon daemon must be started and now is stopped.%s\n", KBLU, KNRM);
+		write(2, s, strlen(s));
+		exit(2);
+	}
+	else
+	{
+		return 1;
+	}
+}
+
 int main(int arc, char *arv[])
 {
+	checkDeamon();
 	int status;
 	signal(SIGUSR1, handlerSIGUSR1);
 
