@@ -19,7 +19,6 @@
 
 char *args2[] = {"pokedex", "pokedex", NULL};
 char *args3[] = {"pokemon-fight", "0", NULL};
-char *args4[] = {"pokemon-fight", "1", NULL};
 
 #define TRUE 1
 #define FALSE 0
@@ -102,6 +101,9 @@ int main(int arc, char *arv[])
 	//ash creates two child pokemon_fight.c
 	pipe(fd3);
 	pipe(fd4);
+	int random = genRand(2);
+	char *string;
+	sprintf(string, "%d", random);
 	pokemon1_pid = fork();
 	if (pokemon1_pid == 0)
 	{
@@ -110,7 +112,7 @@ int main(int arc, char *arv[])
 		close(fd[0]);
 		close(fd2[0]);
 		close(fd2[1]);
-		execv(args3[0], args3);
+		execl("pokemon-fight", "pokemon-fight", string, NULL);
 		close(fd[1]);
 		close(fd3[0]);
 		close(fd3[1]);
@@ -118,6 +120,8 @@ int main(int arc, char *arv[])
 		close(fd4[1]);
 		exit(0);
 	}
+	random = 1 - random;
+	sprintf(string, "%d", random);
 	pokemon2_pid = fork();
 	if (pokemon2_pid == 0)
 	{
@@ -126,7 +130,7 @@ int main(int arc, char *arv[])
 		close(fd[0]);
 		close(fd2[0]);
 		close(fd2[1]);
-		execv(args4[0], args4);
+		execl("pokemon-fight", "pokemon-fight", string, NULL);
 		close(fd[1]);
 		close(fd3[0]);
 		close(fd3[1]);
